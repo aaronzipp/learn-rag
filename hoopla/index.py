@@ -1,3 +1,4 @@
+import itertools
 import json
 import math
 import pickle
@@ -65,6 +66,22 @@ class InvertedIndex:
         return math.log(
             (len(self.docmap) - document_frequency + 0.5) / (document_frequency + 0.5)
             + 1
+        )
+
+    def get_bm25(self, doc_id: int, term: str) -> float:
+        return self.get_bm25_tf(doc_id, term) * self.get_bm25_idf(term)
+
+    def bm25_search(self, term: str, limit: int = 5) -> list[tuple[int, float]]:
+        tokens = set(generate_tokens(term))
+        scores = dict()
+        for doc_id in self.doc_lengths.keys():
+            scores[doc_id] = sum(self.get_bm25(doc_id, token) for token in tokens)
+
+        return itertools.islice(
+            dict(
+                sorted(scores.items(), key=lambda item: item[1], reverse=True)
+            ).items(),
+            limit,
         )
 
     def build(self):

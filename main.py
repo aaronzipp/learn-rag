@@ -67,6 +67,15 @@ def bm25idf(term: str):
 
 
 @app.command()
+def bm25search(term: str, limit: Annotated[int, typer.Argument()] = 5):
+    index = load_index()
+    results = index.bm25_search(term, limit)
+    for doc_id, score in results:
+        movie = index.docmap[doc_id]
+        print(f"({doc_id}) {movie} - Score {score:.2f}")
+
+
+@app.command()
 def tfidf(doc_id: int, term: str) -> None:
     index = load_index()
     token = get_single_token(term)
