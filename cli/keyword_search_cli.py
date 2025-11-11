@@ -1,7 +1,6 @@
 import argparse
 import itertools
 import json
-import re
 import string
 
 from nltk.stem import PorterStemmer
@@ -11,10 +10,6 @@ PUNCTUATION_TABLE = str.maketrans(string.punctuation, " " * len(string.punctuati
 
 def remove_punctuation(input_text: str):
     return input_text.translate(PUNCTUATION_TABLE)
-
-
-def remove_multiple_whitespace(input_text: str):
-    return re.sub(r"\s{2,}", " ", input_text.strip())
 
 
 def generate_tokens(
