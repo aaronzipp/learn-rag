@@ -1,22 +1,12 @@
 import argparse
+import math
 
-from hoopla.index import InvertedIndex
-from hoopla.processing import generate_tokens
-
-
-class CacheNotFoundError(Exception):
-    """Raised when the required cache is missing."""
-
-    pass
+from hoopla.index import InvertedIndex, load_index
+from hoopla.processing import generate_tokens, get_single_token
 
 
 def search(search_term: str) -> None:
-    index = InvertedIndex()
-    try:
-        index.load()
-    except FileNotFoundError as e:
-        msg = f"Cache is missing: {e}"
-        raise CacheNotFoundError(msg) from e
+    index = load_index()
 
     search_tokens = generate_tokens(search_term)
     results = []
@@ -44,6 +34,11 @@ def main() -> None:
     tf_parser.add_argument("doc_id", type=int, help="Document ID")
     tf_parser.add_argument("term", type=str, help="A term")
 
+    idf_parser = subparsers.add_parser(
+        "idf", help="Get the inverse document frequency of a term"
+    )
+    idf_parser.add_argument("term", type=str, help="A term")
+
     args = parser.parse_args()
 
     match args.command:
@@ -55,9 +50,14 @@ def main() -> None:
             index.build()
             index.save()
         case "tf":
-            index = InvertedIndex()
-            index.load()
+            index = load_index()
             print(index.get_tf(args.doc_id, args.term))
+        case "idf":
+            index = load_index()
+            token = get_single_token(args.term)
+            term_doc_count = len(index.index[token])
+            idf = math.log((len(index.docmap) + 1) / (term_doc_count + 1))
+            print(idf)
         case _:
             parser.print_help()
 

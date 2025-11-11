@@ -5,7 +5,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from hoopla.processing import generate_tokens
+from hoopla.processing import generate_tokens, get_single_token
 
 CACHE_DIR = Path("cache/")
 INDEX_CACHE = CACHE_DIR / "index.pkl"
@@ -29,11 +29,7 @@ class InvertedIndex:
         return self.index[term.lower()]
 
     def get_tf(self, doc_id: int, term: str):
-        token = generate_tokens(term)
-        if len(token) > 1:
-            msg = f"Passed multiple tokens: {term}. Only a single token is allowed!"
-            raise ValueError(msg)
-        token = token[0]
+        token = get_single_token(term)
         return self.term_frequencies[doc_id][token]
 
     def build(self):
@@ -69,3 +65,9 @@ class InvertedIndex:
             self.docmap = pickle.load(f)
         with open(TERM_FREQUENCIES_CACHE, "rb") as f:
             self.term_frequencies = pickle.load(f)
+
+
+def load_index() -> InvertedIndex:
+    index = InvertedIndex()
+    index.load()
+    return index
