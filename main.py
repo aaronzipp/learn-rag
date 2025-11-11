@@ -38,6 +38,12 @@ def main() -> None:
 
     subparsers.add_parser("build", help="Build the inverted index")
 
+    tf_parser = subparsers.add_parser(
+        "tf", help="Get the term frequency of a term for a document"
+    )
+    tf_parser.add_argument("doc_id", type=int, help="Document ID")
+    tf_parser.add_argument("term", type=str, help="A term")
+
     args = parser.parse_args()
 
     match args.command:
@@ -48,6 +54,10 @@ def main() -> None:
             index = InvertedIndex()
             index.build()
             index.save()
+        case "tf":
+            index = InvertedIndex()
+            index.load()
+            print(index.get_tf(args.doc_id, args.term))
         case _:
             parser.print_help()
 

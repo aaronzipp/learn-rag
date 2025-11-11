@@ -16,4 +16,4 @@ def remove_punctuation(input_text: str):
 
 def generate_tokens(input_text: str) -> list[str]:
     tokens = remove_punctuation(input_text.lower()).split()
-    return [STEMMER.stem(token) for token in set(tokens) - set(STOPWORDS)]
+    return [STEMMER.stem(token) for token in tokens if token not in STOPWORDS]
