@@ -1,8 +1,9 @@
 import math
+from typing import Annotated
 
 import typer
 
-from hoopla.index import InvertedIndex, load_index
+from hoopla.index import BM25_K1, InvertedIndex, load_index
 from hoopla.processing import generate_tokens, get_single_token
 
 app = typer.Typer()
@@ -44,6 +45,13 @@ def idf(term: str):
     term_doc_count = len(index.index[token])
     idf = math.log((len(index.docmap) + 1) / (term_doc_count + 1))
     print(f"Inverse document frequency of '{term}': {idf:.2f}")
+
+
+@app.command()
+def bm25tf(doc_id: int, term: str, k1: Annotated[float, typer.Argument()] = BM25_K1):
+    index = load_index()
+    tf = index.get_bm25_tf(doc_id, term, k1)
+    print(f"BM25 TF score of '{term}' in document '{doc_id}': {tf:.2f}")
 
 
 @app.command()

@@ -13,6 +13,8 @@ INDEX_CACHE = CACHE_DIR / "index.pkl"
 DOCMAP_CACHE = CACHE_DIR / "docmap.pkl"
 TERM_FREQUENCIES_CACHE = CACHE_DIR / "term_frequencies.pkl"
 
+BM25_K1 = 1.5
+
 
 class InvertedIndex:
     def __init__(self):
@@ -29,9 +31,13 @@ class InvertedIndex:
     def get_documents(self, term: str) -> list[int]:
         return self.index[term.lower()]
 
-    def get_tf(self, doc_id: int, term: str):
+    def get_tf(self, doc_id: int, term: str) -> float:
         token = get_single_token(term)
         return self.term_frequencies[doc_id][token]
+
+    def get_bm25_tf(self, doc_id: int, term: str, k1: int = BM25_K1) -> float:
+        tf = self.get_tf(doc_id, term)
+        return (tf * (1 + k1)) / (tf + k1)
 
     def get_bm25_idf(self, term: str) -> float:
         token = get_single_token(term)
