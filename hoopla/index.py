@@ -1,4 +1,5 @@
 import json
+import math
 import pickle
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -31,6 +32,14 @@ class InvertedIndex:
     def get_tf(self, doc_id: int, term: str):
         token = get_single_token(term)
         return self.term_frequencies[doc_id][token]
+
+    def get_bm25_idf(self, term: str) -> float:
+        token = get_single_token(term)
+        document_frequency = len(self.index[token])
+        return math.log(
+            (len(self.docmap) - document_frequency + 0.5) / (document_frequency + 0.5)
+            + 1
+        )
 
     def build(self):
         with open("movies.json", "r") as f:

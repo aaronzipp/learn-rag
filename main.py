@@ -47,6 +47,13 @@ def idf(term: str):
 
 
 @app.command()
+def bm25idf(term: str):
+    index = load_index()
+    bm25 = index.get_bm25_idf(term)
+    print(f"BM25 IDF score of '{term}': {bm25:.2f}")
+
+
+@app.command()
 def tfidf(doc_id: int, term: str) -> None:
     index = load_index()
     token = get_single_token(term)
