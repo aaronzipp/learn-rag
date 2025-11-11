@@ -22,7 +22,7 @@ class InvertedIndex:
     def _add_document(self, doc_id: int, text: str) -> None:
         tokens = generate_tokens(text)
         self.term_frequencies[doc_id] = Counter(tokens)
-        for token in tokens:
+        for token in set(tokens):
             self.index[token].append(doc_id)
 
     def get_documents(self, term: str) -> list[int]:
