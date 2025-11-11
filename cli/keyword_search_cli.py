@@ -15,8 +15,31 @@ def remove_multiple_whitespace(input_text: str):
     return re.sub(r"\s{2,}", " ", input_text.strip())
 
 
-def generate_tokens(input_text: str) -> list[str]:
-    return remove_punctuation(input_text.lower()).split()
+def generate_tokens(input_text: str, stopwords: list[str]) -> list[str]:
+    tokens = remove_punctuation(input_text.lower()).split()
+    return list(set(tokens) - set(stopwords))
+
+
+def search(search_term: str) -> None:
+    with open("movies.json", "r") as f:
+        movies = json.load(f)
+
+    with open("data/stopwords.txt") as f:
+        stopwords = f.read().splitlines()
+
+    search_tokens = generate_tokens(search_term, stopwords)
+    result_label = 1
+    for movie in movies["movies"]:
+        title_tokens = generate_tokens(movie["title"], stopwords)
+        is_matching = any(
+            search_token in title_token
+            for search_token, title_token in itertools.product(
+                search_tokens, title_tokens
+            )
+        )
+        if is_matching:
+            print(f"{result_label}. {movie['title']}")
+            result_label += 1
 
 
 def main() -> None:
@@ -28,25 +51,10 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    with open("movies.json", "r") as f:
-        movies = json.load(f)
-
     match args.command:
         case "search":
             print(f"Searching for: {args.query}")
-            search_tokens = generate_tokens(args.query)
-            result_label = 1
-            for movie in movies["movies"]:
-                title_tokens = generate_tokens(movie["title"])
-                is_matching = any(
-                    search_token in title_token
-                    for search_token, title_token in itertools.product(
-                        search_tokens, title_tokens
-                    )
-                )
-                if is_matching:
-                    print(f"{result_label}. {movie['title']}")
-                    result_label += 1
+            search(args.query)
         case _:
             parser.print_help()
 
