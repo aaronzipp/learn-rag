@@ -57,7 +57,7 @@ def main() -> None:
             token = get_single_token(args.term)
             term_doc_count = len(index.index[token])
             idf = math.log((len(index.docmap) + 1) / (term_doc_count + 1))
-            print(idf)
+            print(f"Inverse document frequency of '{args.term}': {idf:.2f}")
         case _:
             parser.print_help()
 
