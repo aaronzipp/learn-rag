@@ -1,4 +1,5 @@
 import argparse
+import itertools
 import json
 import re
 import string
@@ -14,8 +15,8 @@ def remove_multiple_whitespace(input_text: str):
     return re.sub(r"\s{2,}", " ", input_text.strip())
 
 
-def process_text(input_text: str):
-    return remove_multiple_whitespace(remove_punctuation(input_text.lower()))
+def generate_tokens(input_text: str) -> list[str]:
+    return remove_punctuation(input_text.lower()).split()
 
 
 def main() -> None:
@@ -33,12 +34,19 @@ def main() -> None:
     match args.command:
         case "search":
             print(f"Searching for: {args.query}")
-            search_term = process_text(args.query)
-            n_results = 1
+            search_tokens = generate_tokens(args.query)
+            result_label = 1
             for movie in movies["movies"]:
-                if search_term in process_text(movie["title"]):
-                    print(f"{n_results}. {movie['title']}")
-                    n_results += 1
+                title_tokens = generate_tokens(movie["title"])
+                is_matching = any(
+                    search_token in title_token
+                    for search_token, title_token in itertools.product(
+                        search_tokens, title_tokens
+                    )
+                )
+                if is_matching:
+                    print(f"{result_label}. {movie['title']}")
+                    result_label += 1
         case _:
             parser.print_help()
 
