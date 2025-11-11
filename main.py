@@ -1,28 +1,32 @@
 import argparse
-import itertools
-import json
 
 from hoopla.index import InvertedIndex
 from hoopla.processing import generate_tokens
 
 
+class CacheNotFoundError(Exception):
+    """Raised when the required cache is missing."""
+
+    pass
+
+
 def search(search_term: str) -> None:
-    with open("movies.json", "r") as f:
-        movies = json.load(f)
+    index = InvertedIndex()
+    try:
+        index.load()
+    except FileNotFoundError as e:
+        msg = f"Cache is missing: {e}"
+        raise CacheNotFoundError(msg) from e
 
     search_tokens = generate_tokens(search_term)
-    result_label = 1
-    for movie in movies["movies"]:
-        title_tokens = generate_tokens(movie["title"])
-        is_matching = any(
-            search_token in title_token
-            for search_token, title_token in itertools.product(
-                search_tokens, title_tokens
-            )
-        )
-        if is_matching:
-            print(f"{result_label}. {movie['title']}")
-            result_label += 1
+    results = []
+    for token in search_tokens:
+        results.extend(index.get_documents(token))
+        if len(results) >= 5:
+            results = results[:5]
+            break
+    for i, result in enumerate(results):
+        print(f"{i + 1}. {index.docmap[result]}")
 
 
 def main() -> None:
