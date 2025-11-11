@@ -4,6 +4,8 @@ import json
 import re
 import string
 
+from nltk.stem import PorterStemmer
+
 PUNCTUATION_TABLE = str.maketrans(string.punctuation, " " * len(string.punctuation))
 
 
@@ -15,9 +17,11 @@ def remove_multiple_whitespace(input_text: str):
     return re.sub(r"\s{2,}", " ", input_text.strip())
 
 
-def generate_tokens(input_text: str, stopwords: list[str]) -> list[str]:
+def generate_tokens(
+    input_text: str, stopwords: list[str], stemmer: PorterStemmer
+) -> list[str]:
     tokens = remove_punctuation(input_text.lower()).split()
-    return list(set(tokens) - set(stopwords))
+    return [stemmer.stem(token) for token in set(tokens) - set(stopwords)]
 
 
 def search(search_term: str) -> None:
@@ -27,10 +31,12 @@ def search(search_term: str) -> None:
     with open("data/stopwords.txt") as f:
         stopwords = f.read().splitlines()
 
-    search_tokens = generate_tokens(search_term, stopwords)
+    stemmer = PorterStemmer()
+
+    search_tokens = generate_tokens(search_term, stopwords, stemmer)
     result_label = 1
     for movie in movies["movies"]:
-        title_tokens = generate_tokens(movie["title"], stopwords)
+        title_tokens = generate_tokens(movie["title"], stopwords, stemmer)
         is_matching = any(
             search_token in title_token
             for search_token, title_token in itertools.product(
