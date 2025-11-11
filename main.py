@@ -2,6 +2,7 @@ import argparse
 import itertools
 import json
 
+from hoopla.index import InvertedIndex
 from hoopla.processing import generate_tokens
 
 
@@ -31,12 +32,18 @@ def main() -> None:
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
 
+    subparsers.add_parser("build", help="Build the inverted index")
+
     args = parser.parse_args()
 
     match args.command:
         case "search":
             print(f"Searching for: {args.query}")
             search(args.query)
+        case "build":
+            index = InvertedIndex()
+            index.build()
+            index.save()
         case _:
             parser.print_help()
 
